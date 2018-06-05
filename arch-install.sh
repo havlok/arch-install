@@ -83,9 +83,9 @@ while ! [ "$DISKPW" = "$DISKPW2" ] || [ -z "$DISKPW" ]; do
 done
 
 INSTALL_OPTIMUS="bumblebee mesa lib32-virtualgl nvidia lib32-nvidia-utils primus lib32-primus bbswitch"
-INSTALL_BASE="vim openssh wget htop ncdu screen zsh net-tools unp debootstrap unrar unzip p7zip rfkill bind-tools rsnapshot lxc php php-gd lua mariadb-clients libmariadbclient"
+INSTALL_BASE="vim openssh intel-ucode wget dialog wifi-menu htop ncdu screen zsh net-tools unp debootstrap unrar unzip p7zip rfkill bind-tools rsnapshot lxc php php-gd lua mariadb-clients libmariadbclient"
 
-INSTALL_DESKTOP="mpv youtube-dl git fuseiso atom chromium firefox vlc ffmpeg gimp blender owncloud-client wine wine-mono wine_gecko steam libreoffice ttf-liberation ttf-ubuntu-font-family ttf-droid ttf-dejavu ttf-freefont noto-fonts-emoji alsa-utils samba lib32-libpulse gst-plugins-ugly gst-plugins-bad gst-libav android-tools pulseaudio-zeroconf noto-fonts picard inkscape audacity pidgin virtualbox virtualbox-host-modules-arch keepassx2"
+INSTALL_DESKTOP="mpv youtube-dl git fuseiso atom chromium firefox vlc ffmpeg gimp libreoffice ttf-liberation ttf-ubuntu-font-family ttf-droid ttf-dejavu ttf-freefont noto-fonts-emoji alsa-utils samba lib32-libpulse gst-plugins-ugly gst-plugins-bad gst-libav android-tools pulseaudio-zeroconf noto-fonts picard inkscape audacity pidgin virtualbox virtualbox-host-modules-arch keepassx2"
 
 INSTALL_DESKTOP_GTK="easytag wireshark-gtk gtk-recordmydesktop openshot gcolor2 meld paprefs evolution qt5-styleplugins"
 INSTALL_DESKTOP_QT="kid3 wireshark-qt qt-recordmydesktop qt5"
@@ -96,11 +96,11 @@ case $DESKTOP in
     DESKTOP="MATE"
     DESKTOP_APPS="mate mate-extra lightdm-gtk-greeter-settings networkmanager pulseaudio network-manager-applet blueman gvfs-smb gvfs-mtp"
     DESKTOP_DM="lightdm"
-    DESKTOP_MISC="${INSTALL_DESKTOP_GTK} totem gnome-keyring awesome  wireshark-gtk"
+    DESKTOP_MISC="${INSTALL_DESKTOP_GTK} totem gnome-keyring awesome wireshark-gtk"
   ;;
   "2")
     DESKTOP="KDE"
-    DESKTOP_APPS="plasma kde-applications kde-l10n-de"
+    DESKTOP_APPS="plasma kde-applications"
     DESKTOP_DM="sddm"
     DESKTOP_MISC="${INSTALL_DESKTOP_QT}"
   ;;
@@ -241,12 +241,10 @@ progress "Configure Base System" 30
 genfstab -p /mnt > /mnt/etc/fstab
 
 cat > /mnt/etc/locale.gen << EOF
-de_DE.UTF-8 UTF-8
-en_GB.UTF-8 UTF-8
 en_US.UTF-8 UTF-8
 EOF
 
-echo LANG=de_DE.UTF-8 > /mnt/etc/locale.conf
+echo LANG=en_US.UTF-8 > /mnt/etc/locale.conf
 
 cat > /mnt/etc/vconsole.conf << EOF
 KEYMAP="$KEYMAP"
@@ -254,7 +252,7 @@ FONT=Lat2-Terminus16
 FONT_MAP=
 EOF
 
-ln -sf /usr/share/zoneinfo/Europe/Berlin /mnt/etc/localtime &> /dev/tty2
+ln -sf /usr/share/zoneinfo/America/Chicago /mnt/etc/localtime &> /dev/tty2
 echo $HOSTNAME > /mnt/etc/hostname
 
 sed -i "s/#Color/Color/" /mnt/etc/pacman.conf &> /dev/tty2
@@ -324,7 +322,7 @@ arch-chroot /mnt /bin/bash -c "mkinitcpio -p linux" &> /dev/tty2
 
 if [ "$UEFI" = "y" ]; then
   progress "Installing UEFI Bootloader to ${ROOTDEV}${RDAPPEND}1" 80
-  arch-chroot /mnt /bin/bash -c "efibootmgr -c -d ${ROOTDEV} -p 1 -l \vmlinuz-linux -L \"Arch Linux\" -u \"initrd=/initramfs-linux.img cryptdevice=${ROOTDEV}${RDAPPEND}2:cryptlvm root=/dev/mapper/lvm-system rw ${CUSTOM_CMDLINE}\"" &> /dev/tty2
+  arch-chroot /mnt /bin/bash -c "efibootmgr -c -d ${ROOTDEV} -p 1 -l \vmlinuz-linux -L \"Arch Linux\" -u \"initrd=/intel-ucode.img initrd=/initramfs-linux.img cryptdevice=${ROOTDEV}${RDAPPEND}2:cryptlvm root=/dev/mapper/lvm-system rw ${CUSTOM_CMDLINE}\"" &> /dev/tty2
 else
   progress "Installing GRUB Bootloader to ${ROOTDEV}${RDAPPEND}1" 80
   sed -i "s|GRUB_CMDLINE_LINUX=\"\"|GRUB_CMDLINE_LINUX=\"cryptdevice=${ROOTDEV}${RDAPPEND}2:cryptlvm ${CUSTOM_CMDLINE}\"|" /mnt/etc/default/grub &> /dev/tty2
@@ -371,7 +369,7 @@ cat > /mnt/firstrun.sh << EOF
 # Locale
 localectl set-keymap $KEYMAP
 localectl set-x11-keymap $KEYMAP
-localectl set-locale LANG=de_DE.UTF-8
+localectl set-locale LANG=en_US.UTF-8
 
 rm -f /etc/systemd/system/firstrun.service /firstrun.sh
 EOF
